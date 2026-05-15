@@ -12,6 +12,15 @@ def _read_attr(result: Any, name: str, default: Any = None) -> Any:
     return getattr(result, name, default)
 
 
+def _normalize_score(score: Any) -> float | None:
+    if score is None:
+        return None
+    try:
+        return float(score)
+    except (TypeError, ValueError):
+        return None
+
+
 def infer_source_type(url: str) -> str:
     parsed = urlparse(url)
     host = parsed.netloc.lower()
@@ -42,7 +51,7 @@ def normalize_exa_result(result: Any) -> SourceDocument:
         summary=clean_text(str(summary)),
         content=clean_text(str(text)),
         source_type=infer_source_type(str(url)),
-        relevance_score=float(score) if score is not None else None,
+        relevance_score=_normalize_score(score),
     )
 
 
