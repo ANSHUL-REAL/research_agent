@@ -225,9 +225,9 @@ def main() -> None:
     with st.sidebar:
         st.header("Run settings")
         mode = st.selectbox("Mode", [mode.value for mode in Mode], index=0)
-        num_results = st.slider("Search results", 3, 10, 5)
+        num_results = st.slider("Search results", 3, 10, 4)
         top_k = st.slider("Retrieved chunks", 2, 10, 5)
-        chunk_size = st.slider("Chunk size", 500, 2000, 1000, step=100)
+        chunk_size = st.slider("Chunk size", 500, 2500, 1600, step=100)
         chunk_overlap = st.slider("Chunk overlap", 50, 400, 150, step=25)
 
     st.markdown(f'<div class="mode-help">{EXAMPLES[mode]}</div>', unsafe_allow_html=True)
@@ -272,12 +272,18 @@ def main() -> None:
             if not chunks:
                 st.error("Could not process retrieved content.")
                 return
+            chunks = chunks[:80]
             st.write(f"Prepared {len(chunks)} chunks.")
 
             status.update(label="Indexing vector chunks...", state="running")
             embeddings = build_embeddings(config.embedding_model, config.google_api_key)
             manager = InMemoryVectorStoreManager(embeddings)
             retriever = manager.build_retriever(chunks, top_k=top_k)
+            retrieval_mode = manager.last_retrieval_mode
+            if retrieval_mode == "keyword":
+                st.warning(
+                    "Embedding quota was reached, so this run used keyword retrieval instead of semantic embeddings."
+                )
 
             status.update(label="Generating grounded answer...", state="running")
             pipeline = RagPipeline(build_llm(config.chat_model, config.google_api_key), retriever)
@@ -309,6 +315,7 @@ def main() -> None:
     with eval_tab:
         diagnostics = build_retrieval_diagnostics(sources, chunks, result.documents, result.citations)
         st.subheader("Retrieval Diagnostics")
+        st.info(f"Retrieval mode: {retrieval_mode.title()}")
         metric_items = list(diagnostics.metrics.items())
         for row_start in range(0, len(metric_items), 3):
             cols = st.columns(3)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from collections import Counter
 
 from langchain_core.documents import Document
 
@@ -52,6 +53,24 @@ def _cosine_similarity(left: list[float], right: list[float]) -> float:
     return dot / (left_norm * right_norm)
 
 
+def _tokens(text: str) -> list[str]:
+    return re.findall(r"[a-zA-Z0-9]+", text.lower())
+
+
+def _is_embedding_quota_error(error: Exception) -> bool:
+    message = str(error).lower()
+    return any(
+        marker in message
+        for marker in (
+            "resource_exhausted",
+            "quota",
+            "rate limit",
+            "429",
+            "embed_content_free_tier_requests",
+        )
+    )
+
+
 class InMemoryRetriever:
     def __init__(self, documents: list[Document], embeddings, top_k: int) -> None:
         self.documents = documents
@@ -71,9 +90,40 @@ class InMemoryRetriever:
         return [document for score, document in scored[: self.top_k] if score > 0]
 
 
+class KeywordRetriever:
+    retrieval_mode = "keyword"
+
+    def __init__(self, documents: list[Document], top_k: int) -> None:
+        self.documents = documents
+        self.top_k = top_k
+        self.document_tokens = [Counter(_tokens(document.page_content)) for document in documents]
+
+    def invoke(self, query: str) -> list[Document]:
+        query_tokens = Counter(_tokens(query))
+        if not query_tokens:
+            return self.documents[: self.top_k]
+        scored: list[tuple[float, Document]] = []
+        for document, document_tokens in zip(self.documents, self.document_tokens):
+            overlap = sum(min(count, document_tokens.get(token, 0)) for token, count in query_tokens.items())
+            density = overlap / max(len(document_tokens), 1)
+            scored.append((overlap + density, document))
+        scored.sort(key=lambda item: item[0], reverse=True)
+        matches = [document for score, document in scored[: self.top_k] if score > 0]
+        return matches or self.documents[: self.top_k]
+
+
 class InMemoryVectorStoreManager:
     def __init__(self, embeddings) -> None:
         self.embeddings = embeddings
+        self.last_retrieval_mode = "semantic"
 
-    def build_retriever(self, documents: list[Document], top_k: int = 5) -> InMemoryRetriever:
-        return InMemoryRetriever(documents, self.embeddings, top_k)
+    def build_retriever(self, documents: list[Document], top_k: int = 5):
+        try:
+            retriever = InMemoryRetriever(documents, self.embeddings, top_k)
+            self.last_retrieval_mode = "semantic"
+            return retriever
+        except Exception as error:
+            if not _is_embedding_quota_error(error):
+                raise
+            self.last_retrieval_mode = "keyword"
+            return KeywordRetriever(documents, top_k)
