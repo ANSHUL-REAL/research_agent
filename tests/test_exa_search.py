@@ -40,6 +40,19 @@ def test_normalize_exa_result_extracts_content_and_metadata():
     assert source.source_type == "Official docs"
 
 
+def test_normalize_exa_result_ignores_invalid_score():
+    source = normalize_exa_result(
+        {
+            "title": "Result",
+            "url": "https://example.com",
+            "text": "Example content",
+            "score": "not-a-number",
+        }
+    )
+
+    assert source.relevance_score is None
+
+
 def test_search_client_returns_normalized_sources():
     client = ExaSearchClient(api_key="test", exa_client=DummyExa())
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from html import escape
+
 import streamlit as st
 
 from src.config import AppConfig, MissingApiKeyError
@@ -45,19 +47,36 @@ st.markdown(
     [data-testid="stSidebar"] [data-baseweb="select"] > div {
         background: #0f1320 !important;
         border-color: #343b4f !important;
+        min-height: 2.55rem !important;
     }
     [data-testid="stSidebar"] [data-baseweb="select"] span,
     [data-testid="stSidebar"] [data-baseweb="select"] svg {
         color: #f8fafc !important;
         fill: #f8fafc !important;
     }
+    [data-testid="stSidebar"] [data-baseweb="select"] span {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.35 !important;
+    }
     [role="listbox"],
     [data-baseweb="popover"] {
         background: #ffffff !important;
     }
+    [data-baseweb="popover"] [role="listbox"] {
+        min-width: 14rem !important;
+    }
+    [role="option"] {
+        min-height: 2.5rem !important;
+        display: flex !important;
+        align-items: center !important;
+    }
     [role="option"],
     [role="option"] * {
         color: #172033 !important;
+        line-height: 1.35 !important;
+        white-space: nowrap !important;
     }
     [data-testid="stSidebar"] .stSlider [data-testid="stTickBarMin"],
     [data-testid="stSidebar"] .stSlider [data-testid="stTickBarMax"] {
@@ -168,7 +187,7 @@ st.markdown(
 
 EXAMPLES = {
     Mode.GENERAL_RESEARCH.value: "What is retrieval-augmented generation and when should I use it?",
-    Mode.ROADMAP_VALIDATOR.value: "Python basics → ML → Deep Learning → LLMs. Is this roadmap complete for becoming an AI engineer?",
+    Mode.ROADMAP_VALIDATOR.value: "Python basics -> ML -> Deep Learning -> LLMs. Is this roadmap complete for becoming an AI engineer?",
     Mode.PROJECT_IDEA_GENERATOR.value: "Suggest AI projects using RAG, LangChain, and a vector database.",
     Mode.LEARNING_PLAN_GENERATOR.value: "Make a 30-day plan to learn RAG and LangChain as a beginner.",
 }
@@ -176,14 +195,15 @@ EXAMPLES = {
 
 def render_source_cards(sources) -> None:
     for source in sources:
-        score = f" · relevance {source.relevance_score:.2f}" if source.relevance_score is not None else ""
+        score = f" - relevance {source.relevance_score:.2f}" if source.relevance_score is not None else ""
+        summary = source_card_summary(source.summary, source.content)
         st.markdown(
             f"""
             <div class="source-card">
-                <strong>{source.title}</strong>
-                <div class="source-meta">{source.source_type}{score}</div>
-                <div>{source_card_summary(source.summary, source.content)}</div>
-                <a href="{source.url}" target="_blank">Open source</a>
+                <strong>{escape(source.title)}</strong>
+                <div class="source-meta">{escape(source.source_type)}{escape(score)}</div>
+                <div>{escape(summary)}</div>
+                <a href="{escape(source.url, quote=True)}" target="_blank" rel="noopener noreferrer">Open source</a>
             </div>
             """,
             unsafe_allow_html=True,
