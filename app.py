@@ -33,11 +33,31 @@ st.markdown(
     [data-testid="stSidebar"] {
         background: #171b26;
     }
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
         color: #f8fafc !important;
     }
-    [data-testid="stSidebar"] [data-baseweb="select"] * {
+    [data-testid="stSidebar"] [data-baseweb="select"] > div {
+        background: #0f1320 !important;
+        border-color: #343b4f !important;
+    }
+    [data-testid="stSidebar"] [data-baseweb="select"] span,
+    [data-testid="stSidebar"] [data-baseweb="select"] svg {
         color: #f8fafc !important;
+        fill: #f8fafc !important;
+    }
+    [role="listbox"],
+    [data-baseweb="popover"] {
+        background: #ffffff !important;
+    }
+    [role="option"],
+    [role="option"] * {
+        color: #172033 !important;
     }
     [data-testid="stSidebar"] .stSlider [data-testid="stTickBarMin"],
     [data-testid="stSidebar"] .stSlider [data-testid="stTickBarMax"] {
@@ -120,6 +140,16 @@ st.markdown(
     div[data-testid="stButton"] button {
         border-radius: 7px;
         font-weight: 680;
+    }
+    div[data-testid="stButton"] button[kind="primary"],
+    div[data-testid="stButton"] button[kind="primary"] p,
+    div[data-testid="stButton"] button[kind="primary"] span {
+        color: #ffffff !important;
+    }
+    div[data-testid="stButton"] button[kind="secondary"],
+    div[data-testid="stButton"] button[kind="secondary"] p,
+    div[data-testid="stButton"] button[kind="secondary"] span {
+        color: #172033 !important;
     }
     div[data-testid="stTextArea"] textarea {
         border-radius: 8px;

@@ -1,4 +1,4 @@
-streamlit>=1.41.0
+streamlit==1.46.0
 python-dotenv>=1.0.1
 exa-py>=1.7.0
 langchain-core>=0.3.0
