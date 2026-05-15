@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+data/chroma_db/
+data/saved_reports/
+
+streamlit.log
+streamlit.err.log
