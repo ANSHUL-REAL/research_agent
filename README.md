@@ -6,7 +6,7 @@ A Streamlit AI/ML research copilot that searches current web sources, indexes re
 
 - Source-backed research answers with citations.
 - Roadmap validation, project ideas, and learning plan modes.
-- Local vector retrieval with ChromaDB.
+- Lightweight vector retrieval with semantic embeddings.
 - Source cards with relevance and source type.
 - Evaluation dashboard with retrieval diagnostics, source mix, citation coverage, evidence accuracy, and an evidence matrix.
 - Markdown report export.

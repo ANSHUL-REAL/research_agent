@@ -11,7 +11,7 @@ from src.prompts import Mode
 from src.rag_chain import InsufficientContextError, RagPipeline, build_llm
 from src.text_splitter import chunk_documents
 from src.utils import build_markdown_report, source_card_summary
-from src.vector_store import VectorStoreManager
+from src.vector_store import InMemoryVectorStoreManager
 
 
 st.set_page_config(
@@ -246,8 +246,8 @@ def main() -> None:
 
             status.update(label="Indexing vector chunks...", state="running")
             embeddings = build_embeddings(config.embedding_model, config.google_api_key)
-            manager = VectorStoreManager(config.chroma_path, embeddings)
-            retriever = manager.build_retriever(chunks, query=query, top_k=top_k)
+            manager = InMemoryVectorStoreManager(embeddings)
+            retriever = manager.build_retriever(chunks, top_k=top_k)
 
             status.update(label="Generating grounded answer...", state="running")
             pipeline = RagPipeline(build_llm(config.chat_model, config.google_api_key), retriever)
